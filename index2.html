@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Keuangan Multi-Usaha</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1,
+        h2 {
+            margin-top: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        select,
+        input,
+        button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f9fafb;
+        }
+
+        .income {
+            color: green;
+        }
+
+        .expense {
+            color: red;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .summary div {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .btn-export {
+            margin-top: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .btn-export:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📊 Keuangan Multi-Usaha</h1>
+
+        <label for="business">Pilih Usaha:</label>
+        <select id="business"></select>
+
+        <h2>Tambah Transaksi</h2>
+        <form id="form">
+            <select id="type">
+                <option value="income">Pemasukan</option>
+                <option value="expense">Pengeluaran</option>
+            </select>
+            <input type="number" id="amount" placeholder="Jumlah (Rp)" required>
+            <input type="text" id="description" placeholder="Deskripsi" required>
+            <input type="date" id="date" required>
+            <button type="submit">Simpan Transaksi</button>
+        </form>
+
+        <div class="summary">
+            <div>Total Pemasukan: Rp <span id="totalIncome">0</span></div>
+            <div>Total Pengeluaran: Rp <span id="totalExpense">0</span></div>
+            <div>Saldo: Rp <span id="balance">0</span></div>
+        </div>
+
+        <h2>Riwayat Transaksi</h2>
+        <label for="monthFilter">Filter Bulan:</label>
+        <input type="month" id="monthFilter">
+        <button class="btn-export" onclick="exportToExcel()">📥 Export ke Excel</button>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Deskripsi</th>
+                    <th>Jumlah</th>
+                    <th>Jenis</th>
+                </tr>
+            </thead>
+            <tbody id="transactionList"></tbody>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const businesses = [
+            { id: 'geprek', name: 'Usaha Geprek' },
+            { id: 'kaos', name: 'Usaha Kaos' }
+        ];
+
+        const STORAGE_KEY = 'finance_data_multiusaha';
+
+        const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            geprek: [],
+            kaos: []
+        };
+
+        const data = savedData;
+
+        const businessSelect = document.getElementById('business');
+        const form = document.getElementById('form');
+        const type = document.getElementById('type');
+        const amount = document.getElementById('amount');
+        const description = document.getElementById('description');
+        const date = document.getElementById('date');
+        const transactionList = document.getElementById('transactionList');
+        const totalIncome = document.getElementById('totalIncome');
+        const totalExpense = document.getElementById('totalExpense');
+        const balance = document.getElementById('balance');
+        const monthFilter = document.getElementById('monthFilter');
+
+        businesses.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = b.name;
+            businessSelect.appendChild(opt);
+        });
+
+        let selectedBusiness = businessSelect.value = businesses[0].id;
+
+        businessSelect.addEventListener('change', () => {
+            selectedBusiness = businessSelect.value;
+            render();
+        });
+
+        monthFilter.addEventListener('change', render);
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const newTransaction = {
+                type: type.value,
+                amount: parseInt(amount.value),
+                description: description.value,
+                date: date.value
+            };
+            data[selectedBusiness].push(newTransaction);
+            saveData();
+            form.reset();
+            render();
+        });
+
+        function render() {
+            const transactions = data[selectedBusiness];
+            transactionList.innerHTML = '';
+            let income = 0, expense = 0;
+
+            const selectedMonth = monthFilter.value;
+            const selectedYear = selectedMonth ? parseInt(selectedMonth.split('-')[0]) : new Date().getFullYear();
+            const selectedMonthIndex = selectedMonth ? parseInt(selectedMonth.split('-')[1]) - 1 : new Date().getMonth();
+
+            transactions.forEach(tx => {
+                const txDate = new Date(tx.date);
+                if (txDate.getFullYear() === selectedYear && txDate.getMonth() === selectedMonthIndex) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+          <td>${tx.date}</td>
+          <td>${tx.description}</td>
+          <td class="${tx.type}">Rp ${tx.amount.toLocaleString()}</td>
+          <td>${tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
+        `;
+                    transactionList.appendChild(tr);
+
+                    if (tx.type === 'income') income += tx.amount;
+                    else expense += tx.amount;
+                }
+            });
+
+            totalIncome.textContent = income.toLocaleString();
+            totalExpense.textContent = expense.toLocaleString();
+            balance.textContent = (income - expense).toLocaleString();
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function exportToExcel() {
+            const ws_data = [
+                ['Tanggal', 'Deskripsi', 'Jumlah', 'Jenis']
+            ];
+
+            const selectedMonth = monthFilter.value;
+            const selectedYear = selectedMonth ? parseInt(selectedMonth.split('-')[0]) : new Date().getFullYear();
+            const selectedMonthIndex = selectedMonth ? parseInt(selectedMonth.split('-')[1]) - 1 : new Date().getMonth();
+
+            data[selectedBusiness].forEach(tx => {
+                const txDate = new Date(tx.date);
+                if (txDate.getFullYear() === selectedYear && txDate.getMonth() === selectedMonthIndex) {
+                    ws_data.push([
+                        tx.date,
+                        tx.description,
+                        tx.amount,
+                        tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'
+                    ]);
+                }
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
+            XLSX.writeFile(wb, `Transaksi_${selectedBusiness}_${selectedMonth || new Date().toISOString().slice(0, 7)}.xlsx`);
+        }
+
+        // Set default bulan ke bulan sekarang
+        const now = new Date();
+        monthFilter.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        saveData();
+        render();
+    </script>
+</body>
+
+</html>

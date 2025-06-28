@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Multi-Usaha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    },
+                    colors: {
+                        base: {
+                            light: '#F8FAFC',
+                            dark: '#0F172A'
+                        },
+                        surface: {
+                            light: '#FFFFFF',
+                            dark: '#1E293B'
+                        },
+                        text: {
+                            light: '#1F2937',
+                            dark: '#E2E8F0'
+                        },
+                        border: {
+                            light: '#E2E8F0',
+                            dark: '#334155'
+                        },
+                        accent: {
+                            light: '#3B82F6',
+                            dark: '#60A5FA'
+                        },
+                        secondary: {
+                            light: '#9CA3AF',
+                            dark: '#94A3B8'
+                        },
+                        danger: {
+                            light: '#EF4444',
+                            dark: '#F87171'
+                        },
+                        success: {
+                            light: '#10B981',
+                            dark: '#34D399'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body class="bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark min-h-screen flex font-sans">
+    <aside class="w-64 bg-surface-light dark:bg-surface-dark p-4 hidden md:block">
+        <h2 class="text-2xl font-bold mb-6">Menu</h2>
+        <ul class="space-y-2">
+            <li><a href="#" id="menu-dashboard" onclick="loadDashboard()"
+                    class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white"><i
+                        class="fas fa-chart-line mr-2"></i>Dashboard</a></li>
+        </ul>
+        <div class="mt-8">
+            <h3 class="text-sm uppercase font-semibold text-secondary-light dark:text-secondary-dark mb-2">Usaha</h3>
+            <div class="space-y-2">
+                <a href="#" id="menu-geprek" onclick="loadContent('geprek')"
+                    class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white"><i
+                        class="fas fa-drumstick-bite mr-2"></i>Geprek</a>
+                <a href="#" id="menu-kaos" onclick="loadContent('kaos')"
+                    class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white"><i
+                        class="fas fa-shirt mr-2"></i>Kaos</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1">
+        <header
+            class="flex flex-col md:flex-row justify-between items-center bg-surface-light dark:bg-surface-dark p-4 border-b border-border-light dark:border-border-dark">
+            <div class="w-full md:w-1/3 mb-2 md:mb-0">
+                <div class="relative">
+                    <input type="text" placeholder="Cari transaksi..."
+                        class="w-full px-4 py-2 rounded bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark pl-10 border border-border-light dark:border-border-dark" />
+                    <i class="fas fa-search absolute left-3 top-3 text-secondary-light dark:text-secondary-dark"></i>
+                </div>
+            </div>
+            <div class="flex justify-end w-full md:w-1/3">
+                <button onclick="toggleDarkMode()" class="text-xl text-accent-light dark:text-accent-dark">
+                    <i id="theme-icon" class="fas"></i>
+                </button>
+            </div>
+        </header>
+        <div id="app" class="p-6"></div>
+    </main>
+
+    <script>
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            updateIcon();
+        }
+
+        function updateIcon() {
+            const icon = document.getElementById('theme-icon');
+            icon.className = document.documentElement.classList.contains('dark') ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        function setActiveMenu(id) {
+            document.querySelectorAll('aside a').forEach(a => a.classList.remove('bg-accent-light', 'dark:bg-accent-dark', 'text-white'));
+            const menu = document.getElementById(`menu-${id}`);
+            if (menu) menu.classList.add('bg-accent-light', 'dark:bg-accent-dark', 'text-white');
+        }
+
+        function loadDashboard() {
+            setActiveMenu('dashboard');
+            const app = document.getElementById('app');
+            app.innerHTML = `
+        <h2 class="text-2xl font-semibold mb-4">Ringkasan Grafik</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+            <h3 class="mb-2 font-semibold">Geprek</h3>
+            <canvas id="chart-geprek" height="180"></canvas>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+            <h3 class="mb-2 font-semibold">Kaos</h3>
+            <canvas id="chart-kaos" height="180"></canvas>
+          </div>
+        </div>`;
+            renderChart('geprek');
+            renderChart('kaos');
+        }
+
+        function renderChart(type) {
+            const ctx = document.getElementById(`chart-${type}`);
+            const data = JSON.parse(localStorage.getItem(`transaksi-${type}`) || '[]');
+            const pemasukan = data.filter(d => d.type === 'pemasukan').reduce((a, b) => a + Number(b.amount), 0);
+            const pengeluaran = data.filter(d => d.type === 'pengeluaran').reduce((a, b) => a + Number(b.amount), 0);
+            const total = pemasukan + pengeluaran || 1;
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Pemasukan', 'Pengeluaran'],
+                    datasets: [{
+                        label: '% Total',
+                        data: [pemasukan / total * 100, pengeluaran / total * 100],
+                        backgroundColor: ['#10B981', '#EF4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 12
+                    }]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.label + ': ' + context.raw.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadContent(type) {
+            setActiveMenu(type);
+            const app = document.getElementById('app');
+            const now = new Date().toISOString().slice(0, 10);
+            const dataKey = `transaksi-${type}`;
+            const data = JSON.parse(localStorage.getItem(dataKey) || '[]');
+            const pemasukan = data.filter(d => d.type === 'pemasukan').reduce((a, b) => a + Number(b.amount), 0);
+            const pengeluaran = data.filter(d => d.type === 'pengeluaran').reduce((a, b) => a + Number(b.amount), 0);
+            const saldo = pemasukan - pengeluaran;
+
+            app.innerHTML = `
+        <h2 class="text-2xl font-semibold mb-4">Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+            <p class="text-secondary-light dark:text-secondary-dark text-sm">Pemasukan</p>
+            <p class="text-lg font-semibold text-success-light dark:text-success-dark">Rp ${pemasukan.toLocaleString('id-ID')}</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+            <p class="text-secondary-light dark:text-secondary-dark text-sm">Pengeluaran</p>
+            <p class="text-lg font-semibold text-danger-light dark:text-danger-dark">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+            <p class="text-secondary-light dark:text-secondary-dark text-sm">Saldo</p>
+            <p class="text-lg font-semibold text-accent-light dark:text-accent-dark">Rp ${saldo.toLocaleString('id-ID')}</p>
+          </div>
+        </div>
+        <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
+          <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" required />
+          <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark">
+            <option value="pemasukan">Pemasukan</option>
+            <option value="pengeluaran">Pengeluaran</option>
+          </select>
+          <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" value="${now}" />
+          <button type="submit" class="col-span-full bg-accent-light dark:bg-accent-dark text-white px-4 py-2 rounded">Simpan Transaksi</button>
+        </form>
+        <div class="mb-4">
+          <label for="filter-${type}" class="block mb-1">Filter Bulan</label>
+          <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
+        </div>
+        <table class="w-full text-left border border-border-light dark:border-border-dark">
+          <thead>
+            <tr class="bg-surface-light dark:bg-surface-dark">
+              <th class="p-2">Tanggal</th>
+              <th class="p-2">Deskripsi</th>
+              <th class="p-2">Jumlah</th>
+              <th class="p-2">Tipe</th>
+            </tr>
+          </thead>
+          <tbody id="table-${type}"></tbody>
+        </table>`;
+
+            const form = document.getElementById(`form-${type}`);
+            const tableBody = document.getElementById(`table-${type}`);
+            const filter = document.getElementById(`filter-${type}`);
+
+            function renderTable(data, month = '') {
+                tableBody.innerHTML = '';
+                data.filter(tx => !month || tx.date.startsWith(month)).forEach(tx => {
+                    tableBody.innerHTML += `
+            <tr>
+              <td class="p-2">${tx.date}</td>
+              <td class="p-2">${tx.desc || '-'}</td>
+              <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
+              <td class="p-2">${tx.type}</td>
+            </tr>`;
+                });
+            }
+
+            renderTable(data);
+
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const newData = {
+                    desc: document.getElementById(`desc-${type}`).value,
+                    amount: document.getElementById(`amount-${type}`).value,
+                    type: document.getElementById(`type-${type}`).value,
+                    date: document.getElementById(`date-${type}`).value || now
+                };
+                data.push(newData);
+                localStorage.setItem(dataKey, JSON.stringify(data));
+                renderTable(data, filter.value);
+                loadContent(type);
+            };
+
+            filter.oninput = () => renderTable(data, filter.value);
+        }
+
+        window.onload = loadDashboard;
+    </script>
+</body>
+
+</html>
