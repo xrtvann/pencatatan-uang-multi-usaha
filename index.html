@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Multi-Usaha</title>
+    <title>Finance Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -16,14 +16,38 @@
                         sans: ['Poppins', 'sans-serif']
                     },
                     colors: {
-                        base: { light: '#F8FAFC', dark: '#0F172A' },
-                        surface: { light: '#FFFFFF', dark: '#1E293B' },
-                        text: { light: '#1F2937', dark: '#E2E8F0' },
-                        border: { light: '#E2E8F0', dark: '#334155' },
-                        accent: { light: '#3B82F6', dark: '#60A5FA' },
-                        secondary: { light: '#9CA3AF', dark: '#94A3B8' },
-                        danger: { light: '#EF4444', dark: '#F87171' },
-                        success: { light: '#10B981', dark: '#34D399' }
+                        base: {
+                            light: '#F8FAFC',
+                            dark: '#0F172A'
+                        },
+                        surface: {
+                            light: '#FFFFFF',
+                            dark: '#1E293B'
+                        },
+                        text: {
+                            light: '#1F2937',
+                            dark: '#E2E8F0'
+                        },
+                        border: {
+                            light: '#E2E8F0',
+                            dark: '#334155'
+                        },
+                        accent: {
+                            light: '#3B82F6',
+                            dark: '#60A5FA'
+                        },
+                        secondary: {
+                            light: '#9CA3AF',
+                            dark: '#94A3B8'
+                        },
+                        danger: {
+                            light: '#EF4444',
+                            dark: '#F87171'
+                        },
+                        success: {
+                            light: '#10B981',
+                            dark: '#34D399'
+                        }
                     }
                 }
             }
@@ -34,51 +58,76 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
-<body class="min-h-screen flex flex-col md:flex-row font-sans text-text-light dark:text-text-dark">
-    <aside class="w-full md:w-64 bg-surface-light dark:bg-surface-dark p-4">
-        <h2 class="text-2xl font-bold mb-6">Finance Tracker</h2>
-        <ul class="space-y-2">
-            <li>
-                <a href="#" id="menu-dashboard" onclick="loadDashboard()"
-                    class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white">
-                    <i class="fas fa-chart-line mr-2"></i>Dashboard
-                </a>
-            </li>
-        </ul>
-        <div class="mt-8">
-            <h3 class="text-sm uppercase font-semibold text-secondary-light dark:text-secondary-dark mb-2">Usaha</h3>
-            <div class="space-y-2">
-                <a href="#" id="menu-geprek" onclick="loadContent('geprek')"
-                    class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white">
-                    <i class="fas fa-drumstick-bite mr-2"></i>Geprek
-                </a>
-                <a href="#" id="menu-kaos" onclick="loadContent('kaos')"
-                    class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white">
-                    <i class="fas fa-shirt mr-2"></i>Kaos
-                </a>
+<body class="bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark font-sans">
+    <div class="flex h-screen overflow-hidden relative">
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 w-64 transform -translate-x-full md:translate-x-0 md:relative md:block bg-surface-light dark:bg-surface-dark p-4 transition-transform duration-300 z-50">
+            <h2 class="text-2xl font-bold mb-6">Finance Tracker</h2>
+            <ul class="space-y-2">
+                <li><a href="#" id="menu-dashboard" onclick="loadDashboard()"
+                        class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white"><i
+                            class="fas fa-chart-line mr-2"></i>Dashboard</a></li>
+            </ul>
+            <div class="mt-8">
+                <h3 class="text-sm uppercase font-semibold text-secondary-light dark:text-secondary-dark mb-2">Usaha
+                </h3>
+                <div class="space-y-2">
+                    <a href="#" id="menu-geprek" onclick="loadContent('geprek')"
+                        class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white"><i
+                            class="fas fa-drumstick-bite mr-2"></i>Geprek</a>
+                    <a href="#" id="menu-kaos" onclick="loadContent('kaos')"
+                        class="block px-4 py-2 rounded transition-colors duration-200 hover:bg-accent-light dark:hover:bg-accent-dark hover:text-white"><i
+                            class="fas fa-shirt mr-2"></i>Kaos</a>
+                </div>
             </div>
-        </div>
-    </aside>
-    <main class="flex-1 bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark">
-        <header
-            class="flex flex-col md:flex-row justify-between items-center bg-surface-light dark:bg-surface-dark p-4 border-b border-border-light dark:border-border-dark">
-            <div class="w-full md:w-1/3 mb-2 md:mb-0">
-                <div class="relative">
+        </aside>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header
+                class="flex items-center justify-between bg-surface-light dark:bg-surface-dark p-4 border-b border-border-light dark:border-border-dark sticky top-0 z-40">
+                <div class="flex items-center w-full md:w-auto gap-2">
+                    <button onclick="toggleSidebar()"
+                        class="block md:hidden text-2xl text-accent-light dark:text-accent-dark z-50">
+                        <i id="menu-toggle-icon" class="fas fa-bars"></i>
+                    </button>
+                    <div class="relative w-full max-w-xs md:hidden">
+                        <input type="text" placeholder="Cari transaksi..."
+                            class="w-full px-4 py-2 rounded bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark pl-10 border border-border-light dark:border-border-dark" />
+                        <i
+                            class="fas fa-search absolute left-3 top-3 text-secondary-light dark:text-secondary-dark"></i>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 max-w-md relative hidden md:block">
                     <input type="text" placeholder="Cari transaksi..."
                         class="w-full px-4 py-2 rounded bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark pl-10 border border-border-light dark:border-border-dark" />
                     <i class="fas fa-search absolute left-3 top-3 text-secondary-light dark:text-secondary-dark"></i>
                 </div>
-            </div>
-            <div class="flex justify-end w-full md:w-1/3">
-                <button onclick="toggleDarkMode()" class="text-xl text-accent-light dark:text-accent-dark">
-                    <i id="theme-icon" class="fas"></i>
-                </button>
-            </div>
-        </header>
-        <div id="app" class="p-6"></div>
-    </main>
+                <div class="flex items-center ml-auto">
+                    <button onclick="toggleDarkMode()" class="text-xl text-accent-light dark:text-accent-dark">
+                        <i id="theme-icon" class="fas"></i>
+                    </button>
+                </div>
+            </header>
+            <main id="app" class="flex-1 overflow-auto p-6"></main>
+        </div>
+    </div>
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
+    </div>
+
+
 
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('menu-toggle-icon');
+            const overlay = document.getElementById('overlay');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            sidebar.classList.toggle('-translate-x-full');
+            icon.className = isOpen ? 'fas fa-bars' : 'fas fa-times';
+            overlay.classList.toggle('hidden', isOpen);
+        }
+
         function toggleDarkMode() {
             const html = document.documentElement;
             const isDark = html.classList.contains('dark');
@@ -117,17 +166,17 @@
             setActiveMenu('dashboard');
             const app = document.getElementById('app');
             app.innerHTML = `
-                <h2 class="text-2xl font-semibold mb-4">Ringkasan Grafik</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-                        <h3 class="mb-2 font-semibold">Geprek</h3>
-                        <canvas id="chart-geprek" height="180"></canvas>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
-                        <h3 class="mb-2 font-semibold">Kaos</h3>
-                        <canvas id="chart-kaos" height="180"></canvas>
-                    </div>
-                </div>`;
+        <h2 class="text-2xl font-semibold mb-4">Ringkasan Grafik</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+            <h3 class="mb-2 font-semibold">Geprek</h3>
+            <canvas id="chart-geprek" height="180"></canvas>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+            <h3 class="mb-2 font-semibold">Kaos</h3>
+            <canvas id="chart-kaos" height="180"></canvas>
+          </div>
+        </div>`;
             renderChart('geprek');
             renderChart('kaos');
         }
@@ -176,46 +225,46 @@
             const saldo = pemasukan - pengeluaran;
 
             app.innerHTML = `
-                <h2 class="text-2xl font-semibold mb-4">Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
-                        <p class="text-secondary-light dark:text-secondary-dark text-sm">Pemasukan</p>
-                        <p class="text-lg font-semibold text-success-light dark:text-success-dark">Rp ${pemasukan.toLocaleString('id-ID')}</p>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
-                        <p class="text-secondary-light dark:text-secondary-dark text-sm">Pengeluaran</p>
-                        <p class="text-lg font-semibold text-danger-light dark:text-danger-dark">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
-                        <p class="text-secondary-light dark:text-secondary-dark text-sm">Saldo</p>
-                        <p class="text-lg font-semibold text-accent-light dark:text-accent-dark">Rp ${saldo.toLocaleString('id-ID')}</p>
-                    </div>
-                </div>
-                <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
-                    <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" required />
-                    <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark">
-                        <option value="pemasukan">Pemasukan</option>
-                        <option value="pengeluaran">Pengeluaran</option>
-                    </select>
-                    <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" value="${now}" />
-                    <button type="submit" class="col-span-full bg-accent-light dark:bg-accent-dark text-white px-4 py-2 rounded">Simpan Transaksi</button>
-                </form>
-                <div class="mb-4">
-                    <label for="filter-${type}" class="block mb-1">Filter Bulan</label>
-                    <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
-                </div>
-                <table class="w-full text-left border border-border-light dark:border-border-dark">
-                    <thead>
-                        <tr class="bg-surface-light dark:bg-surface-dark">
-                            <th class="p-2">Tanggal</th>
-                            <th class="p-2">Deskripsi</th>
-                            <th class="p-2">Jumlah</th>
-                            <th class="p-2">Tipe</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-${type}"></tbody>
-                </table>`;
+        <h2 class="text-2xl font-semibold mb-4">Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+            <p class="text-secondary-light dark:text-secondary-dark text-sm">Pemasukan</p>
+            <p class="text-lg font-semibold text-success-light dark:text-success-dark">Rp ${pemasukan.toLocaleString('id-ID')}</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+            <p class="text-secondary-light dark:text-secondary-dark text-sm">Pengeluaran</p>
+            <p class="text-lg font-semibold text-danger-light dark:text-danger-dark">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
+          </div>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+            <p class="text-secondary-light dark:text-secondary-dark text-sm">Saldo</p>
+            <p class="text-lg font-semibold text-accent-light dark:text-accent-dark">Rp ${saldo.toLocaleString('id-ID')}</p>
+          </div>
+        </div>
+        <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
+          <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" required />
+          <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark">
+            <option value="pemasukan">Pemasukan</option>
+            <option value="pengeluaran">Pengeluaran</option>
+          </select>
+          <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" value="${now}" />
+          <button type="submit" class="col-span-full bg-accent-light dark:bg-accent-dark text-white px-4 py-2 rounded">Simpan Transaksi</button>
+        </form>
+        <div class="mb-4">
+          <label for="filter-${type}" class="block mb-1">Filter Bulan</label>
+          <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
+        </div>
+        <table class="w-full text-left border border-border-light dark:border-border-dark">
+          <thead>
+            <tr class="bg-surface-light dark:bg-surface-dark">
+              <th class="p-2">Tanggal</th>
+              <th class="p-2">Deskripsi</th>
+              <th class="p-2">Jumlah</th>
+              <th class="p-2">Tipe</th>
+            </tr>
+          </thead>
+          <tbody id="table-${type}"></tbody>
+        </table>`;
 
             const form = document.getElementById(`form-${type}`);
             const tableBody = document.getElementById(`table-${type}`);
@@ -225,12 +274,12 @@
                 tableBody.innerHTML = '';
                 data.filter(tx => !month || tx.date.startsWith(month)).forEach(tx => {
                     tableBody.innerHTML += `
-                        <tr>
-                            <td class="p-2">${tx.date}</td>
-                            <td class="p-2">${tx.desc || '-'}</td>
-                            <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
-                            <td class="p-2">${tx.type}</td>
-                        </tr>`;
+            <tr>
+              <td class="p-2">${tx.date}</td>
+              <td class="p-2">${tx.desc || '-'}</td>
+              <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
+              <td class="p-2">${tx.type}</td>
+            </tr>`;
                 });
             }
 
