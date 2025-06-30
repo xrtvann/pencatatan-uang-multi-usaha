@@ -328,8 +328,13 @@
         function loadReport() {
             setActiveMenu('report');
             const app = document.getElementById('app');
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const monthLabel = monthNames[currentMonth] + ' ' + currentYear;
             app.innerHTML = `
-        <h2 class="text-2xl font-semibold mb-4">Laporan Statistik Usaha</h2>
+        <h2 class="text-2xl font-semibold mb-4">Laporan Statistik Usaha Bulan ${monthLabel}</h2>
         <div class="flex gap-4 mb-6">
             <button onclick="exportExcel()" class="bg-success-light dark:bg-success-dark text-white px-4 py-2 rounded flex items-center gap-2">
                 <i class="fas fa-file-excel"></i> Ekspor Excel
@@ -349,47 +354,81 @@
             </div>
         </div>
     `;
-            renderLineChart('geprek');
-            renderLineChart('kaos');
+            renderLineChart('geprek', currentYear, currentMonth, monthNames);
+            renderLineChart('kaos', currentYear, currentMonth, monthNames);
         }
 
-        function renderLineChart(type) {
+        function renderLineChart(type, year, month, monthNames) {
             const ctx = document.getElementById(`report-chart-${type}`);
             const data = JSON.parse(localStorage.getItem(`transaksi-${type}`) || '[]');
-            const monthly = {};
-            data.forEach(tx => {
-                const month = (tx.date || '').slice(0, 7);
-                if (!monthly[month]) monthly[month] = { pemasukan: 0, pengeluaran: 0 };
-                monthly[month][tx.type] += Number(tx.amount);
+            // Ambil transaksi bulan berjalan
+            const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const filtered = data.filter(tx => tx.date && tx.date.startsWith(monthStr));
+            // Ambil tanggal unik (hanya tanggal yang ada transaksi)
+            const uniqueDates = [...new Set(filtered.map(tx => tx.date))].sort();
+            // Label X hanya angka tanggal
+            const labels = uniqueDates.map(date => String(Number(date.slice(8, 10))));
+            // Hitung total pemasukan & pengeluaran per tanggal
+            const pemasukanPerTanggal = uniqueDates.map(date => {
+                return filtered.filter(tx => tx.date === date && tx.type === 'pemasukan')
+                    .reduce((a, b) => a + Number(b.amount), 0);
             });
-            const labels = Object.keys(monthly).sort();
-            const pemasukan = labels.map(m => monthly[m].pemasukan);
-            const pengeluaran = labels.map(m => monthly[m].pengeluaran);
+            const pengeluaranPerTanggal = uniqueDates.map(date => {
+                return filtered.filter(tx => tx.date === date && tx.type === 'pengeluaran')
+                    .reduce((a, b) => a + Number(b.amount), 0);
+            });
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels,
+                    labels: labels,
                     datasets: [
                         {
                             label: 'Pemasukan',
-                            data: pemasukan,
+                            data: pemasukanPerTanggal,
                             borderColor: '#10B981',
                             backgroundColor: 'rgba(16,185,129,0.1)',
-                            tension: 0.4
+                            fill: false,
+                            tension: 0.5,
+                            pointBackgroundColor: '#10B981',
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            borderWidth: 3
                         },
                         {
                             label: 'Pengeluaran',
-                            data: pengeluaran,
+                            data: pengeluaranPerTanggal,
                             borderColor: '#EF4444',
                             backgroundColor: 'rgba(239,68,68,0.1)',
-                            tension: 0.4
+                            fill: false,
+                            tension: 0.5,
+                            pointBackgroundColor: '#EF4444',
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            borderWidth: 3
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: { display: true }
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                title: function (context) {
+                                    // Format: Tanggal XX MMM YYYY
+                                    const idx = context[0].dataIndex;
+                                    const date = uniqueDates[idx];
+                                    const [y, m, d] = date.split('-');
+                                    return `Tanggal ${d} ${monthNames[parseInt(m, 10) - 1]} ${y}`;
+                                },
+                                label: function (context) {
+                                    return `${context.dataset.label}: Rp ${context.parsed.y.toLocaleString('id-ID')}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
                     }
                 }
             });
