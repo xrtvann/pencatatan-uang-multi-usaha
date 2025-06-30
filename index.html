@@ -275,12 +275,15 @@
             function renderTable(data, month = '') {
                 tableBody.innerHTML = '';
                 data.filter(tx => !month || tx.date.startsWith(month)).forEach(tx => {
+                    const badgeClass = tx.type === 'pemasukan'
+                        ? 'inline-block w-24 text-center px-2 py-1 text-xs rounded bg-success-light dark:bg-success-dark text-white'
+                        : 'inline-block w-24 text-center px-2 py-1 text-xs rounded bg-danger-light dark:bg-danger-dark text-white';
                     tableBody.innerHTML += `
             <tr>
               <td class="p-2">${tx.date}</td>
               <td class="p-2">${tx.desc || '-'}</td>
               <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
-              <td class="p-2">${tx.type}</td>
+              <td class="p-2"><span class="${badgeClass}">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</span></td>
             </tr>`;
                 });
             }
