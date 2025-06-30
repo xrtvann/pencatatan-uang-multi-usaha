@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -315,9 +318,9 @@
       <thead>
         <tr class="bg-surface-light dark:bg-surface-dark">
           <th class="p-2">Tanggal</th>
-          <th class="p-2">Deskripsi</th>
-          <th class="p-2">Jumlah</th>
           <th class="p-2">Tipe</th>
+          <th class="p-2">Jumlah</th>
+          <th class="p-2">Deskripsi</th>
           <th class="p-2 text-center">Aksi</th>
         </tr>
       </thead>
@@ -365,9 +368,9 @@
                     tableBody.innerHTML += `
 <tr>
   <td class="p-2">${tx.date}</td>
-  <td class="p-2">${tx.desc || '-'} </td>
-  <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
   <td class="p-2"><span class="${badgeClass}">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</span></td>
+  <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
+  <td class="p-2">${tx.desc || '-'} </td>
   <td class="p-2 text-center">
     <button class="delete-btn" data-id="${tx.id}" title="Hapus">
       <i class="fas fa-trash text-red-500 hover:text-red-700"></i>
@@ -399,7 +402,7 @@
 
             function setDeleteBtnListeners() {
                 Array.from(document.querySelectorAll('.delete-btn')).forEach(btn => {
-                    btn.onclick = function(e) {
+                    btn.onclick = function (e) {
                         e.preventDefault();
                         const delId = this.getAttribute('data-id');
                         Swal.fire({
@@ -484,7 +487,7 @@
 
             // Setelah render, pasang event listener untuk tombol hapus
             Array.from(document.querySelectorAll('.delete-btn')).forEach(btn => {
-                btn.onclick = function(e) {
+                btn.onclick = function (e) {
                     e.preventDefault();
                     const delId = this.getAttribute('data-id');
                     Swal.fire({
@@ -524,17 +527,27 @@
             const now = new Date();
             const currentYear = now.getFullYear();
             const currentMonth = now.getMonth();
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            // Format bulan Indonesia
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             const monthLabel = monthNames[currentMonth] + ' ' + currentYear;
             app.innerHTML = `
         <h2 class="text-2xl font-semibold mb-4">Laporan Statistik Usaha Bulan ${monthLabel}</h2>
-        <div class="flex gap-4 mb-6">
-            <button onclick="exportExcel()" class="bg-success-light dark:bg-success-dark text-white px-4 py-2 rounded flex items-center gap-2">
-                <i class="fas fa-file-excel"></i> Ekspor Excel
-            </button>
-            <button onclick="exportPDF()" class="bg-danger-light dark:bg-danger-dark text-white px-4 py-2 rounded flex items-center gap-2">
-                <i class="fas fa-file-pdf"></i> Ekspor PDF
-            </button>
+        <div class="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-end">
+            <div>
+                <label for="export-usaha" class="block text-sm mb-1 font-medium">Pilih Usaha</label>
+                <select id="export-usaha" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark">
+                    <option value="geprek">Geprek</option>
+                    <option value="kaos">Kaos</option>
+                </select>
+            </div>
+            <div class="flex gap-2 mt-2 sm:mt-0">
+                <button onclick="exportExcel()" class="bg-success-light dark:bg-success-dark text-white px-4 py-2 rounded flex items-center gap-2">
+                    <i class="fas fa-file-excel"></i> Ekspor Excel
+                </button>
+                <button onclick="exportPDF()" class="bg-danger-light dark:bg-danger-dark text-white px-4 py-2 rounded flex items-center gap-2">
+                    <i class="fas fa-file-pdf"></i> Ekspor PDF
+                </button>
+            </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white dark:bg-gray-800 p-4 rounded shadow overflow-x-auto">
@@ -639,26 +652,121 @@
         }
 
         function exportExcel() {
-            Swal.fire({
-                icon: 'info',
-                title: 'Coming Soon',
-                text: 'Fitur ekspor ke Excel akan segera tersedia!',
-                confirmButtonText: 'OK',
-                customClass: {
-                    popup: 'rounded-lg'
+            // Ambil pilihan usaha dari dropdown di halaman report
+            let type = '';
+            const usahaSelect = document.getElementById('export-usaha');
+            if (usahaSelect) {
+                type = usahaSelect.value;
+            } else {
+                if (document.getElementById('menu-geprek').classList.contains('bg-accent-light') || document.getElementById('menu-geprek').classList.contains('dark:bg-accent-dark')) {
+                    type = 'geprek';
+                } else if (document.getElementById('menu-kaos').classList.contains('bg-accent-light') || document.getElementById('menu-kaos').classList.contains('dark:bg-accent-dark')) {
+                    type = 'kaos';
+                } else {
+                    Swal.fire({ icon: 'info', title: 'Pilih menu usaha dulu', text: 'Ekspor hanya bisa dari menu Geprek/Kaos', customClass: { popup: 'rounded-lg' } }); return;
                 }
+            }
+            const data = JSON.parse(localStorage.getItem(`transaksi-${type}`) || '[]');
+            if (!data.length) {
+                Swal.fire({ icon: 'info', title: 'Tidak ada data', text: 'Belum ada transaksi untuk diekspor.', customClass: { popup: 'rounded-lg' } }); return;
+            }
+            // Ambil bulan dan tahun aktif (default: bulan sekarang)
+            const now = new Date();
+            let month = now.getMonth();
+            let year = now.getFullYear();
+            let monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            let bulanLabel = monthNames[month] + ' ' + year;
+            // Judul report
+            const judul = `Laporan Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)} Bulan ${bulanLabel}`;
+            // Siapkan data untuk Excel
+            const wsData = [
+                [judul],
+                ['Tanggal', 'Tipe', 'Jumlah', 'Deskripsi']
+            ];
+            data.forEach(tx => {
+                wsData.push([
+                    tx.date,
+                    tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
+                    'Rp ' + parseInt(tx.amount).toLocaleString('id-ID'),
+                    tx.desc || '-'
+                ]);
             });
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            // Merge cell judul
+            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+            // Auto width kolom
+            ws['!cols'] = [
+                { wch: 12 }, { wch: 30 }, { wch: 18 }, { wch: 14 }
+            ];
+            // Catatan styling: warna header hanya bisa diubah manual di Excel, tidak bisa otomatis dari browser.
+            // Judul tetap di tengah (merge cell), header tabel otomatis bold oleh Excel.
+            // Tambahkan catatan pada judul jika perlu styling lebih lanjut.
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, type.charAt(0).toUpperCase() + type.slice(1));
+            XLSX.writeFile(wb, `Transaksi_${type}_${now.toISOString().slice(0, 10)}.xlsx`);
         }
+
         function exportPDF() {
-            Swal.fire({
-                icon: 'info',
-                title: 'Coming Soon',
-                text: 'Fitur ekspor ke PDF akan segera tersedia!',
-                confirmButtonText: 'OK',
-                customClass: {
-                    popup: 'rounded-lg'
+            let type = '';
+            const usahaSelect = document.getElementById('export-usaha');
+            if (usahaSelect) {
+                type = usahaSelect.value;
+            } else {
+                if (document.getElementById('menu-geprek').classList.contains('bg-accent-light') || document.getElementById('menu-geprek').classList.contains('dark:bg-accent-dark')) {
+                    type = 'geprek';
+                } else if (document.getElementById('menu-kaos').classList.contains('bg-accent-light') || document.getElementById('menu-kaos').classList.contains('dark:bg-accent-dark')) {
+                    type = 'kaos';
+                } else {
+                    Swal.fire({ icon: 'info', title: 'Pilih menu usaha dulu', text: 'Ekspor hanya bisa dari menu Geprek/Kaos', customClass: { popup: 'rounded-lg' } }); return;
                 }
+            }
+            const data = JSON.parse(localStorage.getItem(`transaksi-${type}`) || '[]');
+            if (!data.length) {
+                Swal.fire({ icon: 'info', title: 'Tidak ada data', text: 'Belum ada transaksi untuk diekspor.', customClass: { popup: 'rounded-lg' } }); return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            // Judul utama
+            const now = new Date();
+            let month = now.getMonth();
+            let year = now.getFullYear();
+            let monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            let bulanLabel = monthNames[month] + ' ' + year;
+            const judul1 = `Laporan Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            const judul2 = `Bulan ${bulanLabel}`;
+            // Set font dan posisi judul utama
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const textWidth1 = doc.getTextWidth(judul1);
+            const x1 = (pageWidth - textWidth1) / 2;
+            doc.text(judul1, x1, 18);
+            // Judul kedua (bulan), font bold dan ukuran sama, di bawah judul utama
+            const textWidth2 = doc.getTextWidth(judul2);
+            const x2 = (pageWidth - textWidth2) / 2;
+            doc.text(judul2, x2, 28); // 28 = 18 + 10pt (2 spasi)
+            // Subjudul tanggal ekspor
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Tanggal ekspor: ${new Date().toLocaleDateString('id-ID')}`, 14, 36);
+            // Siapkan data tabel
+            const tableData = data.map(tx => [
+                tx.date,
+                tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
+                'Rp ' + parseInt(tx.amount).toLocaleString('id-ID'),
+                tx.desc || '-'
+            ]);
+            // Jarak judul ke tabel: startY = 46 (sekitar 2-3 spasi dari judul2)
+            doc.autoTable({
+                head: [['Tanggal', 'Tipe', 'Jumlah', 'Deskripsi']],
+                body: tableData,
+                startY: 46,
+                styles: { fontSize: 10, cellPadding: 2 },
+                headStyles: { fillColor: [59, 130, 246] },
+                alternateRowStyles: { fillColor: [240, 240, 240] },
+                margin: { left: 14, right: 14 }
             });
+            doc.save(`Transaksi_${type}_${now.toISOString().slice(0, 10)}.pdf`);
         }
 
         // Live search data
