@@ -90,9 +90,9 @@
                         class="block md:hidden text-2xl text-accent-light dark:text-accent-dark z-50">
                         <i id="menu-toggle-icon" class="fas fa-bars"></i>
                     </button>
-                    <div class="relative w-full max-w-xs md:hidden">
+                    <div class="relative flex-1 max-w-[300px] sm:max-w-xs md:hidden">
                         <input type="text" placeholder="Cari transaksi..."
-                            class="w-full px-4 py-2 rounded bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark pl-10 border border-border-light dark:border-border-dark" />
+                            class="w-full px-3 py-2 rounded bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark pl-9 border border-border-light dark:border-border-dark text-sm" />
                         <i
                             class="fas fa-search absolute left-3 top-3 text-secondary-light dark:text-secondary-dark"></i>
                     </div>
@@ -254,7 +254,8 @@
           <label for="filter-${type}" class="block mb-1">Filter Bulan</label>
           <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
         </div>
-        <table class="w-full text-left border border-border-light dark:border-border-dark">
+        <div class="overflow-x-auto rounded">
+        <table class="w-full min-w-[500px] text-left border border-border-light dark:border-border-dark">
           <thead>
             <tr class="bg-surface-light dark:bg-surface-dark">
               <th class="p-2">Tanggal</th>
@@ -264,7 +265,8 @@
             </tr>
           </thead>
           <tbody id="table-${type}"></tbody>
-        </table>`;
+        </table>
+        </div>`;
 
             const form = document.getElementById(`form-${type}`);
             const tableBody = document.getElementById(`table-${type}`);
