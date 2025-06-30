@@ -237,25 +237,46 @@
             const app = document.getElementById('app');
             const now = new Date().toISOString().slice(0, 10);
             const dataKey = `transaksi-${type}`;
-            const data = JSON.parse(localStorage.getItem(dataKey) || '[]');
+            let data = JSON.parse(localStorage.getItem(dataKey) || '[]');
+            // MIGRASI: Tambahkan id unik jika belum ada (untuk data lama)
+            let migrated = false;
+            data.forEach(tx => {
+                if (!tx.id) {
+                    tx.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+                    migrated = true;
+                }
+            });
+            if (migrated) {
+                localStorage.setItem(dataKey, JSON.stringify(data));
+            }
             const pemasukan = data.filter(d => d.type === 'pemasukan').reduce((a, b) => a + Number(b.amount), 0);
             const pengeluaran = data.filter(d => d.type === 'pengeluaran').reduce((a, b) => a + Number(b.amount), 0);
             const saldo = pemasukan - pengeluaran;
+
+            // Fungsi untuk update ringkasan
+            function updateSummary() {
+                const pemasukan = data.filter(d => d.type === 'pemasukan').reduce((a, b) => a + Number(b.amount), 0);
+                const pengeluaran = data.filter(d => d.type === 'pengeluaran').reduce((a, b) => a + Number(b.amount), 0);
+                const saldo = pemasukan - pengeluaran;
+                document.querySelectorAll('.pemasukan-text').forEach(el => el.textContent = `Rp ${pemasukan.toLocaleString('id-ID')}`);
+                document.querySelectorAll('.pengeluaran-text').forEach(el => el.textContent = `Rp ${pengeluaran.toLocaleString('id-ID')}`);
+                document.querySelectorAll('.saldo-text').forEach(el => el.textContent = `Rp ${saldo.toLocaleString('id-ID')}`);
+            }
 
             app.innerHTML = `
     <h2 class="text-2xl font-semibold mb-4">Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
       <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
         <p class="text-secondary-light dark:text-secondary-dark text-sm">Pemasukan</p>
-        <p class="text-lg font-semibold text-success-light dark:text-success-dark">Rp ${pemasukan.toLocaleString('id-ID')}</p>
+        <p class="text-lg font-semibold text-success-light dark:text-success-dark pemasukan-text">Rp ${pemasukan.toLocaleString('id-ID')}</p>
       </div>
       <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
         <p class="text-secondary-light dark:text-secondary-dark text-sm">Pengeluaran</p>
-        <p class="text-lg font-semibold text-danger-light dark:text-danger-dark">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
+        <p class="text-lg font-semibold text-danger-light dark:text-danger-dark pengeluaran-text">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
       </div>
       <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
         <p class="text-secondary-light dark:text-secondary-dark text-sm">Saldo</p>
-        <p class="text-lg font-semibold text-accent-light dark:text-accent-dark">Rp ${saldo.toLocaleString('id-ID')}</p>
+        <p class="text-lg font-semibold text-accent-light dark:text-accent-dark saldo-text">Rp ${saldo.toLocaleString('id-ID')}</p>
       </div>
     </div>
     <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -297,6 +318,7 @@
           <th class="p-2">Deskripsi</th>
           <th class="p-2">Jumlah</th>
           <th class="p-2">Tipe</th>
+          <th class="p-2 text-center">Aksi</th>
         </tr>
       </thead>
       <tbody id="table-${type}"></tbody>
@@ -336,17 +358,22 @@
                 const start = (page - 1) * pageSize;
                 const end = start + pageSize;
                 const pageData = filteredData.slice(start, end);
-                pageData.forEach(tx => {
+                pageData.forEach((tx) => {
                     const badgeClass = tx.type === 'pemasukan'
                         ? 'inline-block w-24 text-center px-2 py-1 text-xs rounded bg-success-light dark:bg-success-dark text-white'
                         : 'inline-block w-24 text-center px-2 py-1 text-xs rounded bg-danger-light dark:bg-danger-dark text-white';
                     tableBody.innerHTML += `
-                <tr>
-                  <td class="p-2">${tx.date}</td>
-                  <td class="p-2">${tx.desc || '-'} </td>
-                  <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
-                  <td class="p-2"><span class="${badgeClass}">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</span></td>
-                </tr>`;
+<tr>
+  <td class="p-2">${tx.date}</td>
+  <td class="p-2">${tx.desc || '-'} </td>
+  <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
+  <td class="p-2"><span class="${badgeClass}">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</span></td>
+  <td class="p-2 text-center">
+    <button class="delete-btn" data-id="${tx.id}" title="Hapus">
+      <i class="fas fa-trash text-red-500 hover:text-red-700"></i>
+    </button>
+  </td>
+</tr>`;
                 });
                 // Render pagination
                 pagination.innerHTML = `
@@ -366,6 +393,43 @@
                         renderTable(data, filter.value, currentPage);
                     }
                 };
+                // Pasang ulang event listener tombol hapus setelah render
+                setDeleteBtnListeners();
+            }
+
+            function setDeleteBtnListeners() {
+                Array.from(document.querySelectorAll('.delete-btn')).forEach(btn => {
+                    btn.onclick = function(e) {
+                        e.preventDefault();
+                        const delId = this.getAttribute('data-id');
+                        Swal.fire({
+                            title: 'Hapus Data?',
+                            text: 'Data transaksi akan dihapus secara permanen!',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Hapus',
+                            cancelButtonText: 'Batal',
+                            customClass: { popup: 'rounded-lg' }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                data = data.filter(tx => tx.id !== delId);
+                                localStorage.setItem(dataKey, JSON.stringify(data));
+                                renderTable(data, filter.value, currentPage);
+                                updateSummary();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Terhapus!',
+                                    text: 'Data berhasil dihapus.',
+                                    timer: 1200,
+                                    showConfirmButton: false,
+                                    customClass: { popup: 'rounded-lg' }
+                                });
+                            }
+                        });
+                    };
+                });
             }
 
             // Event filter
@@ -387,6 +451,7 @@
             form.onsubmit = (e) => {
                 e.preventDefault();
                 const newData = {
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5), // id unik
                     desc: document.getElementById(`desc-${type}`).value,
                     amount: document.getElementById(`amount-${type}`).value,
                     type: document.getElementById(`type-${type}`).value,
@@ -396,7 +461,10 @@
                 localStorage.setItem(dataKey, JSON.stringify(data));
                 currentPage = 1;
                 renderTable(data, filter.value, currentPage);
-                loadContent(type);
+                updateSummary();
+                // Reset form
+                form.reset();
+                document.getElementById(`date-${type}`).value = now;
             };
 
             filter.oninput = () => {
@@ -413,6 +481,41 @@
                 currentPage = 1;
                 renderTable(data, filter.value, currentPage);
             };
+
+            // Setelah render, pasang event listener untuk tombol hapus
+            Array.from(document.querySelectorAll('.delete-btn')).forEach(btn => {
+                btn.onclick = function(e) {
+                    e.preventDefault();
+                    const delId = this.getAttribute('data-id');
+                    Swal.fire({
+                        title: 'Hapus Data?',
+                        text: 'Data transaksi akan dihapus secara permanen!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Hapus',
+                        cancelButtonText: 'Batal',
+                        customClass: { popup: 'rounded-lg' }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Hapus berdasarkan id unik
+                            data = data.filter(tx => tx.id !== delId);
+                            localStorage.setItem(dataKey, JSON.stringify(data));
+                            renderTable(data, filter.value, currentPage);
+                            updateSummary();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Terhapus!',
+                                text: 'Data berhasil dihapus.',
+                                timer: 1200,
+                                showConfirmButton: false,
+                                customClass: { popup: 'rounded-lg' }
+                            });
+                        }
+                    });
+                };
+            });
         }
 
         function loadReport() {
