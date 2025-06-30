@@ -243,68 +243,144 @@
             const saldo = pemasukan - pengeluaran;
 
             app.innerHTML = `
-        <h2 class="text-2xl font-semibold mb-4">Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
-            <p class="text-secondary-light dark:text-secondary-dark text-sm">Pemasukan</p>
-            <p class="text-lg font-semibold text-success-light dark:text-success-dark">Rp ${pemasukan.toLocaleString('id-ID')}</p>
-          </div>
-          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
-            <p class="text-secondary-light dark:text-secondary-dark text-sm">Pengeluaran</p>
-            <p class="text-lg font-semibold text-danger-light dark:text-danger-dark">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
-          </div>
-          <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
-            <p class="text-secondary-light dark:text-secondary-dark text-sm">Saldo</p>
-            <p class="text-lg font-semibold text-accent-light dark:text-accent-dark">Rp ${saldo.toLocaleString('id-ID')}</p>
-          </div>
-        </div>
-        <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
-          <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" required />
-          <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full">
-            <option value="pemasukan">Pemasukan</option>
-            <option value="pengeluaran">Pengeluaran</option>
-          </select>
-          <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" value="${now}" />
-          <button type="submit" class="col-span-full bg-accent-light dark:bg-accent-dark text-white px-4 py-2 rounded">Simpan Transaksi</button>
-        </form>
-        <div class="mb-4">
-          <label for="filter-${type}" class="block mb-1">Filter Bulan</label>
-          <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
-        </div>
-        <div class="overflow-x-auto rounded">
-        <table class="w-full min-w-[500px] text-left border border-border-light dark:border-border-dark">
-          <thead>
-            <tr class="bg-surface-light dark:bg-surface-dark">
-              <th class="p-2">Tanggal</th>
-              <th class="p-2">Deskripsi</th>
-              <th class="p-2">Jumlah</th>
-              <th class="p-2">Tipe</th>
-            </tr>
-          </thead>
-          <tbody id="table-${type}"></tbody>
-        </table>
-        </div>`;
+    <h2 class="text-2xl font-semibold mb-4">Transaksi Usaha ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+        <p class="text-secondary-light dark:text-secondary-dark text-sm">Pemasukan</p>
+        <p class="text-lg font-semibold text-success-light dark:text-success-dark">Rp ${pemasukan.toLocaleString('id-ID')}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+        <p class="text-secondary-light dark:text-secondary-dark text-sm">Pengeluaran</p>
+        <p class="text-lg font-semibold text-danger-light dark:text-danger-dark">Rp ${pengeluaran.toLocaleString('id-ID')}</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-4 rounded shadow text-center">
+        <p class="text-secondary-light dark:text-secondary-dark text-sm">Saldo</p>
+        <p class="text-lg font-semibold text-accent-light dark:text-accent-dark">Rp ${saldo.toLocaleString('id-ID')}</p>
+      </div>
+    </div>
+    <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
+      <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" required />
+      <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full">
+        <option value="pemasukan">Pemasukan</option>
+        <option value="pengeluaran">Pengeluaran</option>
+      </select>
+      <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" value="${now}" />
+      <button type="submit" class="col-span-full bg-accent-light dark:bg-accent-dark text-white px-4 py-2 rounded">Simpan Transaksi</button>
+      <div class="col-span-full">
+        <hr class="my-6 border-t border-border-light dark:border-border-dark">
+      </div>
+    </form>
+    <div class="mb-4 flex flex-col md:flex-row gap-2 md:items-end">
+      <div class="flex flex-col">
+        <label for="filter-${type}" class="mb-1">Filter Bulan</label>
+        <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
+      </div>
+      <div class="flex flex-col">
+        <label for="filter-date-${type}" class="mb-1">Filter Tanggal</label>
+        <input type="date" id="filter-date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
+      </div>
+      <div class="flex flex-col">
+        <label for="filter-tipe-${type}" class="mb-1">Tipe</label>
+        <select id="filter-tipe-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full">
+          <option value="">Semua</option>
+          <option value="pemasukan">Pemasukan</option>
+          <option value="pengeluaran">Pengeluaran</option>
+        </select>
+      </div>
+    </div>
+    <div class="overflow-x-auto rounded">
+    <table class="w-full min-w-[500px] text-left border border-border-light dark:border-border-dark">
+      <thead>
+        <tr class="bg-surface-light dark:bg-surface-dark">
+          <th class="p-2">Tanggal</th>
+          <th class="p-2">Deskripsi</th>
+          <th class="p-2">Jumlah</th>
+          <th class="p-2">Tipe</th>
+        </tr>
+      </thead>
+      <tbody id="table-${type}"></tbody>
+    </table>
+    <div id="pagination-${type}" class="flex justify-between items-center mt-2"></div>
+    </div>`;
 
             const form = document.getElementById(`form-${type}`);
             const tableBody = document.getElementById(`table-${type}`);
             const filter = document.getElementById(`filter-${type}`);
+            const pagination = document.getElementById(`pagination-${type}`);
+            const filterDate = document.getElementById(`filter-date-${type}`);
+            const filterTipe = document.getElementById(`filter-tipe-${type}`);
 
-            function renderTable(data, month = '') {
+            // Pagination state
+            let currentPage = 1;
+            const pageSize = 10;
+
+            function renderTable(data, month = '', page = 1) {
                 tableBody.innerHTML = '';
-                data.filter(tx => !month || tx.date.startsWith(month)).forEach(tx => {
+                // Ambil filter tambahan
+                const filterDate = document.getElementById(`filter-date-${type}`).value;
+                const filterTipe = document.getElementById(`filter-tipe-${type}`).value;
+                // Filter data
+                let filteredData = data.filter(tx => {
+                    let match = true;
+                    if (month) match = match && tx.date.startsWith(month);
+                    if (filterDate) match = match && tx.date === filterDate;
+                    if (filterTipe) match = match && tx.type === filterTipe;
+                    return match;
+                });
+                // Urutkan data desc (terbaru di atas)
+                filteredData.sort((a, b) => b.date.localeCompare(a.date));
+                const total = filteredData.length;
+                const totalPages = Math.ceil(total / pageSize) || 1;
+                if (page > totalPages) page = totalPages;
+                const start = (page - 1) * pageSize;
+                const end = start + pageSize;
+                const pageData = filteredData.slice(start, end);
+                pageData.forEach(tx => {
                     const badgeClass = tx.type === 'pemasukan'
                         ? 'inline-block w-24 text-center px-2 py-1 text-xs rounded bg-success-light dark:bg-success-dark text-white'
                         : 'inline-block w-24 text-center px-2 py-1 text-xs rounded bg-danger-light dark:bg-danger-dark text-white';
                     tableBody.innerHTML += `
-            <tr>
-              <td class="p-2">${tx.date}</td>
-              <td class="p-2">${tx.desc || '-'}</td>
-              <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
-              <td class="p-2"><span class="${badgeClass}">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</span></td>
-            </tr>`;
+                <tr>
+                  <td class="p-2">${tx.date}</td>
+                  <td class="p-2">${tx.desc || '-'} </td>
+                  <td class="p-2">Rp ${parseInt(tx.amount).toLocaleString('id-ID')}</td>
+                  <td class="p-2"><span class="${badgeClass}">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</span></td>
+                </tr>`;
                 });
+                // Render pagination
+                pagination.innerHTML = `
+            <button id="prev-${type}" class="px-3 py-1 rounded border mr-2 ${page === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-accent-light dark:hover:bg-accent-dark'}" ${page === 1 ? 'disabled' : ''}>Prev</button>
+            <span>Halaman ${page} dari ${totalPages}</span>
+            <button id="next-${type}" class="px-3 py-1 rounded border ml-2 ${page === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-accent-light dark:hover:bg-accent-dark'}" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        `;
+                document.getElementById(`prev-${type}`).onclick = () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderTable(data, filter.value, currentPage);
+                    }
+                };
+                document.getElementById(`next-${type}`).onclick = () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderTable(data, filter.value, currentPage);
+                    }
+                };
             }
+
+            // Event filter
+            document.getElementById(`filter-${type}`).oninput = () => {
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
+            };
+            document.getElementById(`filter-date-${type}`).oninput = () => {
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
+            };
+            document.getElementById(`filter-tipe-${type}`).oninput = () => {
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
+            };
 
             renderTable(data);
 
@@ -318,11 +394,25 @@
                 };
                 data.push(newData);
                 localStorage.setItem(dataKey, JSON.stringify(data));
-                renderTable(data, filter.value);
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
                 loadContent(type);
             };
 
-            filter.oninput = () => renderTable(data, filter.value);
+            filter.oninput = () => {
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
+            };
+
+            filterDate.oninput = () => {
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
+            };
+
+            filterTipe.onchange = () => {
+                currentPage = 1;
+                renderTable(data, filter.value, currentPage);
+            };
         }
 
         function loadReport() {
@@ -344,13 +434,17 @@
             </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded shadow overflow-x-auto">
                 <h3 class="mb-2 font-semibold">Geprek</h3>
-                <canvas id="report-chart-geprek" height="180"></canvas>
+                <div style="min-width:600px;">
+                    <canvas id="report-chart-geprek" height="180" style="min-width:600px;"></canvas>
+                </div>
             </div>
-            <div class="bg-white dark:bg-gray-800 p-4 rounded shadow">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded shadow overflow-x-auto">
                 <h3 class="mb-2 font-semibold">Kaos</h3>
-                <canvas id="report-chart-kaos" height="180"></canvas>
+                <div style="min-width:600px;">
+                    <canvas id="report-chart-kaos" height="180" style="min-width:600px;"></canvas>
+                </div>
             </div>
         </div>
     `;
@@ -365,18 +459,23 @@
             const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
             const filtered = data.filter(tx => tx.date && tx.date.startsWith(monthStr));
             // Ambil tanggal unik (hanya tanggal yang ada transaksi)
-            const uniqueDates = [...new Set(filtered.map(tx => tx.date))].sort();
-            // Label X hanya angka tanggal
-            const labels = uniqueDates.map(date => String(Number(date.slice(8, 10))));
-            // Hitung total pemasukan & pengeluaran per tanggal
-            const pemasukanPerTanggal = uniqueDates.map(date => {
+            let uniqueDates = [...new Set(filtered.map(tx => tx.date))].sort();
+            let labels = uniqueDates.map(date => String(Number(date.slice(8, 10))));
+            let pemasukanPerTanggal = uniqueDates.map(date => {
                 return filtered.filter(tx => tx.date === date && tx.type === 'pemasukan')
                     .reduce((a, b) => a + Number(b.amount), 0);
             });
-            const pengeluaranPerTanggal = uniqueDates.map(date => {
+            let pengeluaranPerTanggal = uniqueDates.map(date => {
                 return filtered.filter(tx => tx.date === date && tx.type === 'pengeluaran')
                     .reduce((a, b) => a + Number(b.amount), 0);
             });
+            // Jika tanggal pertama bukan 1, tambahkan titik 0 di awal
+            if (labels.length && labels[0] !== '1') {
+                labels = ['1', ...labels];
+                pemasukanPerTanggal = [0, ...pemasukanPerTanggal];
+                pengeluaranPerTanggal = [0, ...pengeluaranPerTanggal];
+                uniqueDates = [`${year}-${String(month + 1).padStart(2, '0')}-01`, ...uniqueDates];
+            }
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -415,7 +514,6 @@
                         tooltip: {
                             callbacks: {
                                 title: function (context) {
-                                    // Format: Tanggal XX MMM YYYY
                                     const idx = context[0].dataIndex;
                                     const date = uniqueDates[idx];
                                     const [y, m, d] = date.split('-');
@@ -428,7 +526,10 @@
                         }
                     },
                     scales: {
-                        y: { beginAtZero: true }
+                        y: {
+                            beginAtZero: true,
+                            suggestedMin: 0
+                        }
                     }
                 }
             });
