@@ -241,18 +241,18 @@
           </div>
         </div>
         <form id="form-${type}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
-          <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" required />
-          <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark">
+          <input type="text" id="desc-${type}" placeholder="Deskripsi (opsional)" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
+          <input type="number" id="amount-${type}" placeholder="Jumlah" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" required />
+          <select id="type-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full">
             <option value="pemasukan">Pemasukan</option>
             <option value="pengeluaran">Pengeluaran</option>
           </select>
-          <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" value="${now}" />
+          <input type="date" id="date-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" value="${now}" />
           <button type="submit" class="col-span-full bg-accent-light dark:bg-accent-dark text-white px-4 py-2 rounded">Simpan Transaksi</button>
         </form>
         <div class="mb-4">
           <label for="filter-${type}" class="block mb-1">Filter Bulan</label>
-          <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark" />
+          <input type="month" id="filter-${type}" class="p-2 rounded border border-border-light dark:border-border-dark bg-base-light dark:bg-base-dark w-full" />
         </div>
         <div class="overflow-x-auto rounded">
         <table class="w-full min-w-[500px] text-left border border-border-light dark:border-border-dark">
