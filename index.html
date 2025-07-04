@@ -62,7 +62,8 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
-<body class="bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark font-sans">
+<body
+    class="bg-base-light dark:bg-base-dark text-text-light dark:text-text-dark font-sans transition-colors duration-500">
     <div class="flex h-screen overflow-hidden relative">
         <aside id="sidebar"
             class="fixed inset-y-0 left-0 w-64 transform -translate-x-full md:translate-x-0 md:relative md:block bg-surface-light dark:bg-surface-dark p-4 transition-transform duration-300 z-50">
@@ -138,6 +139,37 @@
 
 
 
+    <style>
+        html,
+        body,
+        .bg-base-light,
+        .bg-base-dark,
+        .bg-surface-light,
+        .bg-surface-dark,
+        .text-text-light,
+        .text-text-dark,
+        .border-border-light,
+        .border-border-dark,
+        .bg-accent-light,
+        .bg-accent-dark,
+        .bg-success-light,
+        .bg-success-dark,
+        .bg-danger-light,
+        .bg-danger-dark,
+        .text-success-light,
+        .text-success-dark,
+        .text-danger-light,
+        .text-danger-dark,
+        .text-accent-light,
+        .text-accent-dark,
+        .text-secondary-light,
+        .text-secondary-dark,
+        .bg-white,
+        .dark\:bg-gray-800,
+        .bg-gray-800 {
+            transition: background-color 0.5s, color 0.5s, border-color 0.5s;
+        }
+    </style>
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
